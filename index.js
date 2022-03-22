@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
 
@@ -9,6 +10,7 @@ dotenv.config();
 // middlewares
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(cors());
 
 // routes
 const routes = require("./app/routes");
