@@ -31,7 +31,7 @@ sequelize.sync({ force: false }).then(() => {
         "Connection to the databse has been established successfully."
       );
 
-      const PORT = process.env.port || 5000;
+      const PORT = process.env.PORT || 5000;
       app.listen(PORT, () =>
         console.log(`server up and running on port ${PORT}`)
       );
