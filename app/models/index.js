@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
+const databaseConfig = require("../config/database.config");
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './showTracker_database.sqlite'
-});
+const sequelize = new Sequelize(
+  process.env.NODE_ENV === 'development'
+    ? databaseConfig.development
+    : databaseConfig.production
+);
 
 const db = {};
 
