@@ -35,9 +35,5 @@ module.exports = (sequelize, DataTypes) => {
     }
   });
 
-  Show.associate = (models) => {
-    models.Collection.belongsTo(models.Collection, { foreignKey: 'collection_id', sourceKey: 'collection_id' });
-  }
-
   return Show;
 }
