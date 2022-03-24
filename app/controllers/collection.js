@@ -92,10 +92,7 @@ module.exports = {
       );
 
     Collection.create(
-      { collection_name, user_id: req.user.id },
-      {
-        include: [{ model: User }],
-      }
+      { collection_name, user_id: req.user.id }
     )
       .then((dbRes) => res.status(201).json(dbRes))
       .catch((error) => next(error));
