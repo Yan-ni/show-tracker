@@ -12,7 +12,7 @@ module.exports = {
   create: (req, res, next) => {
     const collection_id = req.body.collection_id;
     const show = {
-      show_name: req.body.show_name,
+      show_name: req.body.show_name?.trim(),
       show_description: req.body.show_description,
       seasons_watched: req.body.seasons_watched,
       episodes_watched: req.body.episodes_watched,
@@ -20,8 +20,18 @@ module.exports = {
 
     if (!collection_id) return next(new Error("collection id is required"));
 
-    if (show.show_name >= 30)
-      next(
+    if(!show.show_name)
+    return next(
+      new ValidationError("show name is required", [
+        {
+          message: "show name is required",
+          field: "show_name",
+        },
+      ])
+    );
+
+    if (show.show_name.length >= 30)
+      return next(
         new ValidationError("the show name can't exceed 30 characters", [
           {
             message: "the show name can't exceed 30 characters",
