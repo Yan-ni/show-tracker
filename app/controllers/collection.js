@@ -1,12 +1,5 @@
-const { User, Collection, Show } = require("../models");
-
-class ValidationError extends Error {
-  constructor(message, errors) {
-    super(message);
-    this.errors = errors;
-    this.name = "ValidationError";
-  }
-}
+const { Collection } = require("../models");
+const ValidationError = require("../config/ValidationError");
 
 const getUserCollectionsCount = (user_id) =>
   new Promise((resolve, reject) =>
@@ -23,60 +16,6 @@ const CreateDefaultCollection = (user_id) =>
   );
 
 module.exports = {
-  get: (req, res, next) => {
-    const collection_id = req.params.id;
-
-    if (collection_id) {
-      return Collection.findOne({
-        where: { collection_id },
-        attributes: ["user_id", "collection_id", "collection_name"],
-        include: [
-          {
-            model: Show,
-            attributes: [
-              "show_id",
-              "show_name",
-              "show_description",
-              "seasons_watched",
-              "episodes_watched",
-              "collection_id",
-            ],
-          },
-        ],
-      })
-        .then((dbRes) => {
-          if (!dbRes) return next(new Error("incorrect collection id"));
-
-          if (dbRes.user_id !== req.user.id) {
-            res.statusCode = 403;
-            return next(new Error("Forbidden"));
-          }
-
-          return res.json(dbRes);
-        })
-        .catch((error) => next(error));
-    }
-
-    Collection.findAll({
-      where: { user_id: req.user.id },
-      attributes: ["user_id", "collection_id", "collection_name"],
-      include: [
-        {
-          model: Show,
-          attributes: [
-            "show_id",
-            "show_name",
-            "show_description",
-            "seasons_watched",
-            "episodes_watched",
-            "collection_id",
-          ],
-        },
-      ],
-    })
-      .then((dbRes) => res.json(dbRes))
-      .catch((error) => next(error));
-  },
   create: (req, res, next) => {
     const collection_name =
       req.body.collection_name && req.body.collection_name.trim();

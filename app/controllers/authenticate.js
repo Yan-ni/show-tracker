@@ -1,20 +1,13 @@
 const { User, Collection } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const ValidationError = require("../config/ValidationError");
 
 const validateEmail = (email) => {
   const regex =
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return regex.test(String(email).toLowerCase());
 };
-
-class ValidationError extends Error {
-  constructor(message, errors) {
-    super(message);
-    this.errors = errors;
-    this.name = "ValidationError";
-  }
-}
 
 const createJWTToken = (user) =>
   jwt.sign(
