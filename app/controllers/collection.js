@@ -1,5 +1,5 @@
 const { Collection } = require("../models");
-const ValidationError = require("../config/ValidationError");
+const { collectionSchema } = require("../validations/collection");
 
 const getUserCollectionsCount = (user_id) =>
   new Promise((resolve, reject) =>
@@ -17,18 +17,11 @@ const CreateDefaultCollection = (user_id) =>
 
 module.exports = {
   create: (req, res, next) => {
-    const collection_name =
-      req.body.collection_name && req.body.collection_name.trim();
+    const collection_name = req.body.collection_name;
 
-    if (!collection_name || !collection_name.length)
-      return next(
-        new ValidationError("collection name is required", [
-          {
-            field: "collection_name",
-            message: "collection name is required",
-          },
-        ])
-      );
+    const { error } = collectionSchema.validate({collection_name});
+    
+    if(error) return next(error);
 
     Collection.create(
       { collection_name, user_id: req.user.id }
@@ -38,15 +31,15 @@ module.exports = {
   },
   update: (req, res, next) => {
     const collection_id = req.params.id;
-    const collection_name = req.body && req.body.collection_name;
+    const collection_name = req.body.collection_name;
 
-    if (!collection_name) return next(new Error("collection name is required"));
+    const { error } = collectionSchema.validate({collection_name});
+
+    if(error) return next(error);
 
     Collection.findOne({ where: { collection_id } })
       .then((dbRes) => {
-        console.log(dbRes);
-
-        if (!dbRes) return next(new Error("incorrect collection id"));
+        if (!dbRes) return next(new Error("collection doesn't exist"));
 
         if (dbRes.user_id !== req.user.id) {
           res.statusCode = 403;
@@ -54,7 +47,7 @@ module.exports = {
         }
 
         Collection.update({ collection_name }, { where: { collection_id } })
-          .then(() => res.sendStatus(200))
+          .then(() => res.sendStatus(202))
           .catch((error) => next(error));
       })
       .catch((error) => next(error));
@@ -65,9 +58,12 @@ module.exports = {
     if (!collection_id) return next(new Error("collection id required"));
 
     Collection.findOne({ where: { collection_id } }).then((dbRes) => {
-      if (!dbRes) return next(new Error("incorrect collection id"));
+      if (!dbRes) return next(new Error("collection doesn't exist"));
 
-      if (dbRes.user_id !== req.user.id) return next(new Error("Forbidden"));
+      if (dbRes.user_id !== req.user.id) {
+        res.statusCode = 403;
+        return next(new Error("Forbidden"));
+      }
 
       Collection.destroy({ where: { collection_id } })
         .then(() => {
