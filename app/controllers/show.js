@@ -1,5 +1,4 @@
 const { Show, Collection } = require("../models");
-const ValidationError = require('../config/ValidationError');
 const showSchema = require('../validations/show');
 const Joi = require('joi');
 
@@ -23,21 +22,29 @@ module.exports = {
     }
   },
   update: (req, res, next) => {
-    const show_id = req.params.id;
-    const show = req.body;
+    req.body.show_id = req.params.id;
 
-    const { error } = showSchema.validate(show, { abortEarly: false });
+    try {
+      const show = Joi.attempt(req.body, showSchema.update, { abortEarly: false });
 
-    if(error) return next(error);
+      const show_dbRes = await Show.findOne({ where: { show_id: show.show_id } });
 
-    delete show.show_id;
-    delete show.collection_id;
+      if(!show_dbRes) throw new Error("show doesn't exist");
 
-    if (!Object.keys(show).length)
-      return next(new Error("Nothing has been modifed"));
+      const collection_dbRes = await Collection.findOne({ where: { collection_id: show_dbRes.collection_id } });
 
-    Show.update(show, { where: { show_id } })
-      .then(() => res.sendStatus(200))
-      .catch((error) => next(error));
+      if(!collection_dbRes) throw new Error("the show's collection has been deleted");
+
+      if(collection_dbRes.user_id !== req.user.id) {
+        res.statusCode = 403;
+        throw new Error("Forbidden");
+      }
+
+      await Show.update(show, { where: { show_id } });
+
+      res.sendStatus(202);
+    } catch (error) {
+      next(error);
+    }
   }
 };
