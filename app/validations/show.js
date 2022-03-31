@@ -1,6 +1,7 @@
 const Joi = require('joi');
 
 const create = Joi.object().keys({
+  collection_id: Joi.string().guid({ version: 'uuidv4' }).required(),
   show_name: Joi.string().trim().min(2).max(30).required().label('show name').messages({
     'string.empty': '"show name" is required'
   }),

@@ -1,5 +1,5 @@
 const { Collection } = require("../models");
-const { collectionSchema } = require("../validations/collection");
+const collectionSchema = require("../validations/collection");
 const Joi = require("joi");
 
 const getUserCollectionsCount = (user_id) =>
@@ -27,6 +27,7 @@ module.exports = {
 
       res.status(201).json(dbRes);
     } catch (error) {
+      console.error(error);
       next(error);
     }
   },
