@@ -1,6 +1,6 @@
 const { Show, Collection } = require("../models");
 const showSchema = require('../validations/show');
-const Joi = require('joi');
+const Joi = require("joi");
 
 module.exports = {
   create: async (req, res, next) => {
@@ -21,7 +21,7 @@ module.exports = {
       next(error);
     }
   },
-  update: (req, res, next) => {
+  update: async (req, res, next) => {
     req.body.show_id = req.params.id;
 
     try {

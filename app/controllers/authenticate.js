@@ -2,8 +2,8 @@ const { User, Collection } = require("../models");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ValidationError = require("../config/ValidationError");
-const { loginSchema, signupSchema } = require("../validations/user");
-const Joi = require('joi');
+const { loginSchema, signupSchema } = require("../validations/authenticate");
+const Joi = require("joi");
 
 const createJWT = (user) =>
   jwt.sign(

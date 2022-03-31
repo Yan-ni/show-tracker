@@ -1,6 +1,6 @@
 const { Collection } = require("../models");
 const { collectionSchema } = require("../validations/collection");
-const Joi = require('joi');
+const Joi = require("joi");
 
 const getUserCollectionsCount = (user_id) =>
   new Promise((resolve, reject) =>

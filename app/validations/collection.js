@@ -1,11 +1,7 @@
 const Joi = require('joi');
 
-const collectionSchema = Joi.object().keys({
+module.exports = Joi.object().keys({
   collection_name: Joi.string().trim().min(2).max(15).required().messages({
-    'string.empty': '"name" is required'
-  }).label('name')
+    'string.empty': '"collection name" is required'
+  }).label('collection name')
 });
-
-module.exports = {
-  collectionSchema
-}
