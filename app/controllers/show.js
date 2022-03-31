@@ -1,32 +1,26 @@
 const { Show, Collection } = require("../models");
 const ValidationError = require('../config/ValidationError');
-const { showSchema } = require('../validations/show');
+const showSchema = require('../validations/show');
+const Joi = require('joi');
 
 module.exports = {
-  create: (req, res, next) => {
-    const collection_id = req.body.collection_id;
-    const show = {
-      show_name: req.body.show_name,
-      show_description: req.body.show_description,
-      seasons_watched: req.body.seasons_watched,
-      episodes_watched: req.body.episodes_watched,
-    };
+  create: async (req, res, next) => {
+    try {
+      const newShow = Joi.attempt(req.body, showSchema.create, { abortEarly: false });
+      
+      const collection_dbRes = await Collection.findOne({ where: { collection_id: newShow.collection_id } });
 
-    if (!collection_id) return next(new Error("collection id is required"));
+      if (collection_dbRes.user_id !== req.user.id) {
+        res.statusCode = 403;
+        throw new Error("Forbidden");
+      }
 
-    const { error } = showSchema.validate(show, { abortEarly: false });
+      const show_dbRes = await Show.create(newShow);
 
-    if(error) return next(error);
-
-    Collection.findOne({ where: { collection_id } })
-      .then((dbRes) => {
-        if (dbRes.user_id !== req.user.id) return next(new Error("Forbidden"));
-
-        Show.create({ collection_id, ...show })
-          .then((dbRes) => res.status(201).json(dbRes))
-          .catch((error) => next(error));
-      })
-      .catch((error) => next(error));
+      res.status(201).json(show_dbRes);
+    } catch (error) {
+      next(error);
+    }
   },
   update: (req, res, next) => {
     const show_id = req.params.id;
@@ -45,12 +39,5 @@ module.exports = {
     Show.update(show, { where: { show_id } })
       .then(() => res.sendStatus(200))
       .catch((error) => next(error));
-  },
-  delete: (req, res, next) => {
-    const show_id = req.params.id;
-
-    
-
-    res.json(show_id);
-  },
+  }
 };

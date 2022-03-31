@@ -1,5 +1,6 @@
 const { Collection } = require("../models");
 const { collectionSchema } = require("../validations/collection");
+const Joi = require('joi');
 
 const getUserCollectionsCount = (user_id) =>
   new Promise((resolve, reject) =>
@@ -16,68 +17,68 @@ const CreateDefaultCollection = (user_id) =>
   );
 
 module.exports = {
-  create: (req, res, next) => {
-    const collection_name = req.body.collection_name;
+  create: async (req, res, next) => {
+    try {
+      let newCollection = Joi.attempt(req.body, collectionSchema);
 
-    const { error } = collectionSchema.validate({collection_name});
-    
-    if(error) return next(error);
+      newCollection.user_id = req.user.id;
 
-    Collection.create(
-      { collection_name, user_id: req.user.id }
-    )
-      .then((dbRes) => res.status(201).json(dbRes))
-      .catch((error) => next(error));
+      const dbRes = await Collection.create(newCollection);
+
+      res.status(201).json(dbRes);
+    } catch (error) {
+      next(error);
+    }
   },
-  update: (req, res, next) => {
+  update: async (req, res, next) => {
     const collection_id = req.params.id;
-    const collection_name = req.body.collection_name;
 
-    const { error } = collectionSchema.validate({collection_name});
+    try {
+      const collection = Joi.attempt(req.body, collectionSchema);
 
-    if(error) return next(error);
+      const dbRes = await Collection.findOne({ where: { collection_id } });
 
-    Collection.findOne({ where: { collection_id } })
-      .then((dbRes) => {
-        if (!dbRes) return next(new Error("collection doesn't exist"));
+      if (!dbRes) throw new Error("collection doesn't exist");
 
-        if (dbRes.user_id !== req.user.id) {
-          res.statusCode = 403;
-          return next(new Error("Forbidden"));
-        }
+      if (dbRes.user_id !== req.user.id) {
+        res.statusCode = 403;
+        throw new Error("Forbidden");
+      }
 
-        Collection.update({ collection_name }, { where: { collection_id } })
-          .then(() => res.sendStatus(202))
-          .catch((error) => next(error));
-      })
-      .catch((error) => next(error));
+      await Collection.update(collection, { where: { collection_id } });
+
+      res.sendStatus(202);
+    } catch (error) {
+      next(error);
+    }
   },
-  delete: (req, res, next) => {
+  delete: async (req, res, next) => {
     const collection_id = req.params.id;
 
     if (!collection_id) return next(new Error("collection id required"));
 
-    Collection.findOne({ where: { collection_id } }).then((dbRes) => {
-      if (!dbRes) return next(new Error("collection doesn't exist"));
+    try {
+      const dbRes = await Collection.findOne({ where: { collection_id } });
+
+      if (!dbRes) throw new Error("collection doesn't exist");
 
       if (dbRes.user_id !== req.user.id) {
         res.statusCode = 403;
-        return next(new Error("Forbidden"));
+        throw new Error("Forbidden");
+      }
+      
+      await Collection.destroy({ where: { collection_id } });
+
+      const count = await getUserCollectionsCount(req.user.id);
+
+      if(count === 0) {
+        await CreateDefaultCollection(req.user.id);
+        return res.status(202).json(dbRes);
       }
 
-      Collection.destroy({ where: { collection_id } })
-        .then(() => {
-          getUserCollectionsCount(req.user.id).then((count) => {
-            if (!count) {
-              return CreateDefaultCollection(req.user.id)
-                .then(dbRes => res.status(202).json(dbRes))
-                .catch((error) => next(error));
-            }
-
-            res.sendStatus(202);
-          });
-        })
-        .catch((error) => next(error));
-    });
+      res.sendStatus(202);
+    } catch (error) {
+      next(error);
+    }
   },
 };

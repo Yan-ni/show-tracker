@@ -3,8 +3,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const ValidationError = require("../config/ValidationError");
 const { loginSchema, signupSchema } = require("../validations/user");
+const Joi = require('joi');
 
-const createJWTToken = (user) =>
+const createJWT = (user) =>
   jwt.sign(
     {
       id: user.user_id,
@@ -15,73 +16,52 @@ const createJWTToken = (user) =>
 
 module.exports = {
   login: async (req, res, next) => {
-    const { username, password } = req.body;
+    try {
+      const loginCredentials = Joi.attempt(req.body, loginSchema, { abortEarly: false });
 
-    const { error } = loginSchema.validate(
-      { username, password },
-      { abortEarly: false }
-    );
+      const user = await User.findOne({ where: { username: loginCredentials.username } });
 
-    if (error) return next(error);
-
-    const user = await User.findOne({ where: { username } });
-
-    if (!user)
-      return next(
-        new ValidationError("wrong username", [
+      if (!user)
+        throw new ValidationError("wrong username", [
           {
             message: "wrong username",
             path: ["username"],
           },
-        ])
-      );
+        ]);
 
-    bcrypt.compare(password, user.password, (error, result) => {
-      if (error) return next(error);
+      const result = await bcrypt.compare(loginCredentials.password, user.password);
 
       if (!result)
-        return next(
-          new ValidationError("wrong password", [
-            {
-              message: "wrong password",
-              path: ["password"],
-            },
-          ])
-        );
+        throw new ValidationError("wrong password", [
+          {
+            message: "wrong password",
+            path: ["password"],
+          },
+        ]);
 
-      try {
-        res.json({ authorization: `Bearer ${createJWTToken(user)}` });
-      } catch (error) {
-        next(error);
-      }
-    });
+      res.json({ authorization: `Bearer ${createJWT(user)}` });
+    } catch (error) {
+      next(error);
+    }
   },
   signup: async (req, res, next) => {
-    let { username, email, password } = req.body;
+    try {
+      let newUser = Joi.attempt(req.body, signupSchema, { abortEarly: false });
 
-    const { error } = signupSchema.validate(
-      { username, email, password },
-      { abortEarly: false }
-    );
+      newUser.password = await bcrypt.hash(password, 10);
 
-    if (error) return next(error);
+      const dbRes = await User.create(newUser);
 
-    bcrypt.hash(password, 10, (error, hash) => {
-      if (error) return next(error);
+      await Collection.create({
+        user_id: dbRes.user_id,
+        collection_name: "Collection",
+      });
 
-      password = hash;
-
-      User.create({ username, email, password })
-        .then((dbRes) => {
-          Collection.create({
-            collection_name: "Collection",
-            user_id: dbRes.user_id,
-          });
-          res
-            .status(201)
-            .json({ authorization: `Bearer ${createJWTToken(dbRes)}` });
-        })
-        .catch((error) => next(error));
-    });
+      res
+        .status(201)
+        .json({ authorization: `Bearer ${createJWT(dbRes)}` });
+    } catch (error) {
+      next(error);
+    }
   },
 };

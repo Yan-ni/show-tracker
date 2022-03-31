@@ -2,8 +2,7 @@ module.exports = (error, req, res, next) => {
   res.statusCode = res.statusCode === 200 ? 500 : res.statusCode;
 
   let errors;
-
-  console.log(error);
+  
   if (error.name === "ValidationError") {
     res.statusCode = 400;
     errors = error.details.map(({ message, path }) => ({

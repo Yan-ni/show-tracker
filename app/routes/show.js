@@ -8,6 +8,6 @@ const controllers = require('../controllers');
 
 router.post('/', verifyToken, controllers.show.create);
 router.put('/:id', verifyToken, controllers.show.update);
-router.delete('/:id', verifyToken, controllers.show.delete);
+// router.delete('/:id', verifyToken, controllers.show.delete);
 
 module.exports = router;

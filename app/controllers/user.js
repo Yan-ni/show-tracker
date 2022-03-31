@@ -1,9 +1,7 @@
 const { User, Collection, Show } = require('../models')
-const bcrypt = require('bcrypt');
 
 module.exports = {
   get: (req, res, next) => {
-
     User.findOne({
       where: {
         user_id: req.user.id
@@ -21,16 +19,5 @@ module.exports = {
       ]
     }).then(dbRes => res.json(dbRes))
     .catch(error => next(error));
-
-  },
-  update: (req, res, next) => {
-    //! verify requester permissions
-
-    User
-      .update(req.body, {
-        where: {
-          user_id: req.params.id
-        }
-      }).then(dbRes => res.json({dbRes}));
   }
 }
