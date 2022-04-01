@@ -11,7 +11,6 @@ const create = Joi.object().keys({
 });
 
 const update = Joi.object().keys({
-  collection_id: Joi.string().guid({ version: 'uuidv4' }).required(),
   show_name: Joi.string().trim().min(2).max(30).label('show name'),
   show_description: Joi.string().trim().allow(null, '').label('show description'),
   seasons_watched: Joi.number().label('seasons watched'),
