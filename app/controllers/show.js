@@ -22,14 +22,19 @@ module.exports = {
     }
   },
   update: async (req, res, next) => {
-    req.body.show_id = req.params.id;
+    const show_id = req.params.id;
 
     try {
       const show = Joi.attempt(req.body, showSchema.update, { abortEarly: false });
 
-      const show_dbRes = await Show.findOne({ where: { show_id: show.show_id } });
+      const show_dbRes = await Show.findOne({ where: { show_id } });
 
       if(!show_dbRes) throw new Error("show doesn't exist");
+
+      if(show_dbRes.collection_id !== show.collection_id) {
+        res.statusCode = 403;
+        throw new Error("Forbidden");
+      }
 
       const collection_dbRes = await Collection.findOne({ where: { collection_id: show_dbRes.collection_id } });
 
