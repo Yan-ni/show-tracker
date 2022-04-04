@@ -73,7 +73,7 @@ module.exports = {
       const count = await getUserCollectionsCount(req.user.id);
 
       if(count === 0) {
-        await CreateDefaultCollection(req.user.id);
+        const dbRes = await CreateDefaultCollection(req.user.id);
         return res.status(202).json(dbRes);
       }
 
