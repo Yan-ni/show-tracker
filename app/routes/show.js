@@ -1,10 +1,8 @@
 const express = require('express');
+const verifyToken = require('../middlewares/verifyToken');
+const controllers = require('../controllers');
 
 const router = express.Router();
-
-const verifyToken = require('../middlewares/verifyToken');
-
-const controllers = require('../controllers');
 
 router.post('/', verifyToken, controllers.show.create);
 router.put('/:id', verifyToken, controllers.show.update);

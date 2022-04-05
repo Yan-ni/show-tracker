@@ -1,4 +1,4 @@
-const { Sequelize } =  require('sequelize');
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Collection = sequelize.define('Collection', {
@@ -9,13 +9,13 @@ module.exports = (sequelize, DataTypes) => {
     },
     collection_name: {
       type: DataTypes.STRING(15),
-      allowNull: false
-    }
+      allowNull: false,
+    },
   });
 
   Collection.associate = (models) => {
     models.Collection.hasMany(models.Show, { foreignKey: 'collection_id' });
-  }
+  };
 
   return Collection;
-}
+};

@@ -10,5 +10,4 @@ router.post('/', veriftToken, controllers.collection.create);
 router.put('/:id', veriftToken, controllers.collection.update);
 router.delete('/:id', veriftToken, controllers.collection.delete);
 
-
 module.exports = router;

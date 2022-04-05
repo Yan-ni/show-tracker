@@ -1,4 +1,4 @@
-const { Sequelize } =  require('sequelize');
+const { Sequelize } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   const Show = sequelize.define('Show', {
@@ -9,18 +9,18 @@ module.exports = (sequelize, DataTypes) => {
     },
     show_name: {
       type: DataTypes.STRING(30),
-      allowNull: false
+      allowNull: false,
     },
     show_description: {
-      type: DataTypes.STRING
+      type: DataTypes.STRING,
     },
     seasons_watched: {
       type: DataTypes.INTEGER,
-      defaultValue: 0
+      defaultValue: 0,
     },
     episodes_watched: {
       type: DataTypes.INTEGER,
-      defaultValue: 0
+      defaultValue: 0,
     },
     // favorite: {
     //   type: DataTypes.BOOLEAN,
@@ -31,9 +31,9 @@ module.exports = (sequelize, DataTypes) => {
     //   defaultValue: false
     // },
     image_url: {
-      type: DataTypes.STRING
-    }
+      type: DataTypes.STRING,
+    },
   });
 
   return Show;
-}
+};

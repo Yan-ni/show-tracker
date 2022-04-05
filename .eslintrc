@@ -11,6 +11,11 @@
     "ecmaVersion": "latest"
   },
   "rules": {
-    "curly": "off"
+    "curly": "off",
+    "implicit-arrow-linebreak": "off",
+    "camelcase": "off",
+    "import/no-dynamic-require": "off",
+    "global-require": "off",
+    "no-unused-vars": ["warn", { "varsIgnorePattern": "next" }]
   }
 }

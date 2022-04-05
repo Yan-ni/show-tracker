@@ -1,24 +1,23 @@
 const fs = require('fs');
 const path = require('path');
 const { Sequelize, DataTypes } = require('sequelize');
-const databaseConfig = require("../config/database.config");
+const databaseConfig = require('../config/database.config');
 
 const sequelize = new Sequelize(
   process.env.NODE_ENV === 'development'
     ? databaseConfig.development
-    : databaseConfig.production
+    : databaseConfig.production,
 );
 
 const db = {};
 
 fs
   .readdirSync(__dirname)
-  .filter(fileName => fileName !== 'index.js')
-  .forEach(fileName => {
+  .filter((fileName) => fileName !== 'index.js')
+  .forEach((fileName) => {
     const model = require(path.join(__dirname, fileName))(sequelize, DataTypes);
     db[model.name] = model;
   });
-
 
 Object
   .keys(db)
